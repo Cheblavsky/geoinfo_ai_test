@@ -1,0 +1,17 @@
+.venv/
+venv/
+env/
+__pycache__/
+*.pyc
+.pytest_cache/
+.env
+.env.*
+.DS_Store
+Thumbs.db
+static/outputs/*.png
+static/outputs/*.jpg
+static/outputs/*.jpeg
+static/outputs/*.tif
+static/outputs/*.tiff
+!static/outputs/.gitkeep
+border_shapefile.zip

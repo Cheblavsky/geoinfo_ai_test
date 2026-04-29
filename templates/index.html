@@ -1,0 +1,141 @@
+<!doctype html>
+<html lang="en" dir="ltr">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title data-i18n="pageTitle">Szeged Wells Dashboard</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=Noto+Sans+Arabic:wght@400;500;600;700&family=Noto+Sans+SC:wght@400;500;700&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <div class="page-shell">
+        <header class="hero">
+            <div>
+                <p class="eyebrow" data-i18n="hero.eyebrow">Local Geoinformatics Dashboard</p>
+                <h1 data-i18n="hero.title">Szeged Wells Interpolation Viewer</h1>
+                <p class="hero-copy" data-i18n="hero.copy">
+                    Explore groundwater well measurements, compare parameter values through time,
+                    and generate a purple-tinted interpolation surface directly on the map.
+                </p>
+            </div>
+            <div class="hero-badge">
+                <span class="badge-label" data-i18n="hero.badgeLabel">Backend</span>
+                <strong>Flask + Leaflet + IDW</strong>
+            </div>
+        </header>
+
+        <main class="dashboard-grid">
+            <aside class="control-panel">
+                <section class="panel-card">
+                    <div class="card-heading">
+                        <h2 data-i18n="controls.title">Controls</h2>
+                        <p data-i18n="controls.description">Choose a parameter and a time step, then refresh the surface.</p>
+                    </div>
+
+                    <label class="field">
+                        <span data-i18n="controls.language">Language</span>
+                        <select id="language-select"></select>
+                    </label>
+
+                    <label class="field">
+                        <span data-i18n="controls.parameter">Parameter</span>
+                        <select id="parameter-select"></select>
+                    </label>
+
+                    <label class="field">
+                        <span data-i18n="controls.time">Time / Date</span>
+                        <select id="time-select"></select>
+                    </label>
+
+                    <div class="field">
+                        <div class="range-header">
+                            <span data-i18n="controls.opacity">Interpolation opacity</span>
+                            <strong id="opacity-value">70%</strong>
+                        </div>
+                        <input id="opacity-slider" type="range" min="10" max="100" value="70">
+                    </div>
+
+                    <button id="refresh-btn" class="primary-button" type="button" data-i18n="controls.refresh">Refresh Interpolation</button>
+
+                    <div id="status-box" class="status-box info" aria-live="polite"></div>
+                    <div id="warning-box" class="warning-box hidden"></div>
+                </section>
+
+                <section class="panel-card">
+                    <div class="card-heading">
+                        <h2 data-i18n="detected.title">Detected Fields</h2>
+                        <p data-i18n="detected.description">Automatic CSV and shapefile detection from the backend.</p>
+                    </div>
+                    <dl class="info-grid">
+                        <div>
+                            <dt data-i18n="detected.x">X / Lon column</dt>
+                            <dd id="coord-x">-</dd>
+                        </div>
+                        <div>
+                            <dt data-i18n="detected.y">Y / Lat column</dt>
+                            <dd id="coord-y">-</dd>
+                        </div>
+                        <div>
+                            <dt data-i18n="detected.timeSource">Time source</dt>
+                            <dd id="time-source">-</dd>
+                        </div>
+                        <div>
+                            <dt data-i18n="detected.wellSource">Well column</dt>
+                            <dd id="well-source">-</dd>
+                        </div>
+                    </dl>
+                </section>
+
+                <section class="panel-card">
+                    <div class="card-heading">
+                        <h2 data-i18n="legend.title">Legend</h2>
+                        <p data-i18n="legend.description">The same color ramp is used for the points and the surface.</p>
+                    </div>
+
+                    <div class="legend-block">
+                        <h3 data-i18n="legend.points">Well Points</h3>
+                        <div id="point-legend" class="legend-scale empty-legend" data-i18n="messages.noPointDataYet">No data loaded yet.</div>
+                    </div>
+
+                    <div class="legend-block">
+                        <h3 data-i18n="legend.surface">Interpolated Surface</h3>
+                        <div id="surface-legend" class="legend-scale empty-legend" data-i18n="messages.noSurfaceLoadedYet">No surface loaded yet.</div>
+                    </div>
+                </section>
+            </aside>
+
+            <section class="map-panel">
+                <div class="map-summary">
+                    <article class="summary-pill">
+                        <span data-i18n="summary.parameter">Parameter</span>
+                        <strong id="summary-parameter">-</strong>
+                    </article>
+                    <article class="summary-pill">
+                        <span data-i18n="summary.time">Time</span>
+                        <strong id="summary-time">-</strong>
+                    </article>
+                    <article class="summary-pill">
+                        <span data-i18n="summary.validWells">Valid wells</span>
+                        <strong id="summary-count">0</strong>
+                    </article>
+                </div>
+
+                <div class="map-wrap">
+                    <div id="map"></div>
+                    <div id="map-legend" class="map-legend">
+                        <h3 data-i18n="legend.mapTitle">Map Legend</h3>
+                        <div class="empty-legend" data-i18n="messages.waitingForData">Waiting for data...</div>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+    <script src="{{ url_for('static', filename='js/i18n.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
+</body>
+</html>

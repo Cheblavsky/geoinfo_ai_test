@@ -307,6 +307,13 @@ input[type="range"] {
     gap: 14px;
 }
 
+.map-summary-header {
+    display: flex;
+    justify-content: space-between;
+    gap: 16px;
+    align-items: center;
+}
+
 .map-summary {
     display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -332,6 +339,25 @@ input[type="range"] {
     display: block;
     margin-top: 8px;
     font-size: 1.02rem;
+    word-break: break-word;
+}
+
+.secondary-button {
+    border: 1px solid rgba(126, 34, 206, 0.18);
+    border-radius: 16px;
+    padding: 12px 16px;
+    background: rgba(255, 255, 255, 0.94);
+    color: var(--purple-900);
+    font: inherit;
+    font-weight: 700;
+    cursor: pointer;
+    transition: border-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.secondary-button:hover {
+    transform: translateY(-1px);
+    border-color: var(--purple-600);
+    box-shadow: 0 10px 20px rgba(76, 29, 149, 0.12);
 }
 
 .map-wrap {
@@ -408,6 +434,10 @@ html[dir="rtl"] .legend-item {
     direction: rtl;
 }
 
+html[dir="rtl"] .map-summary-header {
+    flex-direction: row-reverse;
+}
+
 html[dir="rtl"] select,
 html[dir="rtl"] .status-box,
 html[dir="rtl"] .warning-box {
@@ -447,6 +477,11 @@ html[dir="rtl"] .map-legend {
 
     .map-summary {
         grid-template-columns: 1fr;
+    }
+
+    .map-summary-header {
+        flex-direction: column;
+        align-items: stretch;
     }
 
     #map {

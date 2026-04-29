@@ -16,6 +16,7 @@
                 time: "Time / Date",
                 opacity: "Interpolation opacity",
                 refresh: "Refresh Interpolation",
+                resetView: "Reset Map View",
             },
             detected: {
                 title: "Detected Fields",
@@ -33,9 +34,14 @@
                 mapTitle: "Map Legend",
             },
             summary: {
+                title: "Current Selection",
+                description: "A quick overview of the current parameter, time, and interpolation result.",
                 parameter: "Parameter",
                 time: "Time",
                 validWells: "Valid wells",
+                method: "Interpolation method",
+                minValue: "Min value",
+                maxValue: "Max value",
             },
             popup: {
                 well: "Well",
@@ -106,6 +112,7 @@
                 time: "时间 / 日期",
                 opacity: "插值透明度",
                 refresh: "刷新插值",
+                resetView: "重置地图视图",
             },
             detected: {
                 title: "检测到的字段",
@@ -123,9 +130,14 @@
                 mapTitle: "地图图例",
             },
             summary: {
+                title: "当前选择",
+                description: "快速查看当前参数、时间和插值结果。",
                 parameter: "参数",
                 time: "时间",
                 validWells: "有效水井",
+                method: "插值方法",
+                minValue: "最小值",
+                maxValue: "最大值",
             },
             popup: {
                 well: "水井",
@@ -196,6 +208,7 @@
                 time: "کات / بەروار",
                 opacity: "ڕوونایی هاوکێشە",
                 refresh: "نوێکردنەوەی هاوکێشە",
+                resetView: "گەڕاندنەوەی دیمەنی نەخشە",
             },
             detected: {
                 title: "خانە دۆزراوەکان",
@@ -213,9 +226,14 @@
                 mapTitle: "ڕوونکردنەوەی نەخشە",
             },
             summary: {
+                title: "هەڵبژاردنی ئێستا",
+                description: "پوختەیەکی خێرا لە پارامێتەر، کات و ئەنجامی هاوکێشەی ئێستا.",
                 parameter: "پارامێتەر",
                 time: "کات",
                 validWells: "بیرە بەردەستەکان",
+                method: "شێوازی هاوکێشە",
+                minValue: "کەمترین بەها",
+                maxValue: "زۆرترین بەها",
             },
             popup: {
                 well: "بیر",
@@ -286,6 +304,7 @@
                 time: "Idő / dátum",
                 opacity: "Interpoláció átlátszatlansága",
                 refresh: "Interpoláció frissítése",
+                resetView: "Térképi nézet visszaállítása",
             },
             detected: {
                 title: "Felismert mezők",
@@ -303,9 +322,14 @@
                 mapTitle: "Térképi jelmagyarázat",
             },
             summary: {
+                title: "Aktuális kiválasztás",
+                description: "Gyors áttekintés az aktuális paraméterről, időről és interpolációs eredményről.",
                 parameter: "Paraméter",
                 time: "Idő",
                 validWells: "Érvényes kutak",
+                method: "Interpolációs módszer",
+                minValue: "Minimum érték",
+                maxValue: "Maximum érték",
             },
             popup: {
                 well: "Kút",

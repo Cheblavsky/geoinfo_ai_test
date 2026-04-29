@@ -14,6 +14,14 @@ const state = {
     currentSurfacePayload: null,
     currentPointLegend: [],
     currentSurfaceLegend: [],
+    currentSummary: {
+        parameter: "-",
+        time: "-",
+        visibleWells: "0",
+        method: "-",
+        min: "-",
+        max: "-",
+    },
     statusDescriptor: null,
     warningDescriptor: null,
 };
@@ -381,6 +389,81 @@ function renderBoundary(boundaryGeojson, boundaryBounds) {
     }
 }
 
+function formatDisplayValue(value) {
+    if (value === null || value === undefined || value === "") {
+        return "-";
+    }
+
+    const numberValue = Number(value);
+    if (!Number.isNaN(numberValue) && Number.isFinite(numberValue)) {
+        if (Number.isInteger(numberValue)) {
+            return String(numberValue);
+        }
+        return numberValue.toFixed(4).replace(/0+$/, "").replace(/\.$/, "");
+    }
+
+    return String(value);
+}
+
+function setSummaryValues(values = {}) {
+    state.currentSummary = {
+        ...state.currentSummary,
+        ...values,
+    };
+
+    document.getElementById("summary-parameter").textContent = state.currentSummary.parameter || "-";
+    document.getElementById("summary-time").textContent = state.currentSummary.time || "-";
+    document.getElementById("summary-count").textContent = state.currentSummary.visibleWells || "0";
+    document.getElementById("summary-method").textContent = state.currentSummary.method || "-";
+    document.getElementById("summary-min").textContent = state.currentSummary.min || "-";
+    document.getElementById("summary-max").textContent = state.currentSummary.max || "-";
+}
+
+function buildMapBounds() {
+    let bounds = null;
+
+    const extendBounds = (layerBounds) => {
+        if (!layerBounds || !layerBounds.isValid || !layerBounds.isValid()) {
+            return;
+        }
+        if (!bounds) {
+            bounds = L.latLngBounds(layerBounds.getSouthWest(), layerBounds.getNorthEast());
+        } else {
+            bounds.extend(layerBounds);
+        }
+    };
+
+    extendBounds(state.boundaryLayer.getBounds());
+
+    state.pointsLayer.eachLayer((layer) => {
+        if (typeof layer.getBounds === "function") {
+            extendBounds(layer.getBounds());
+        } else if (typeof layer.getLatLng === "function") {
+            const latLng = layer.getLatLng();
+            if (latLng) {
+                if (!bounds) {
+                    bounds = L.latLngBounds(latLng, latLng);
+                } else {
+                    bounds.extend(latLng);
+                }
+            }
+        }
+    });
+
+    return bounds;
+}
+
+function resetMapView() {
+    if (!state.map) {
+        return;
+    }
+
+    const bounds = buildMapBounds();
+    if (bounds && bounds.isValid()) {
+        state.map.fitBounds(bounds, { padding: [16, 16], maxZoom: 14 });
+    }
+}
+
 function buildPopup(properties) {
     const timeInfo = getTimeInfo();
     const localizedTime = getLocalizedTimeLabel(timeInfo) || properties.time;
@@ -420,14 +503,20 @@ function renderPoints(payload) {
 
     const stats = payload.stats || {};
     state.currentPointLegend = stats.legend || [];
-    document.getElementById("summary-count").textContent = stats.point_count ?? 0;
+    setSummaryValues({
+        visibleWells: formatDisplayValue(stats.point_count ?? 0),
+        min: formatDisplayValue(stats.min_value),
+        max: formatDisplayValue(stats.max_value),
+    });
     renderLegend("point-legend", state.currentPointLegend, t("messages.noPointValuesAvailable"));
     return state.currentPointLegend;
 }
 
 function updateSummary(parameter, timeLabel) {
-    document.getElementById("summary-parameter").textContent = parameter || "-";
-    document.getElementById("summary-time").textContent = timeLabel || "-";
+    setSummaryValues({
+        parameter: parameter || "-",
+        time: timeLabel || "-",
+    });
 }
 
 function applySurfaceOpacity() {
@@ -447,6 +536,11 @@ function renderSurface(payload) {
         state.currentSurfaceLegend = [];
         const warningDescriptor = translateServerMessage(payload.warning);
         const emptyMessage = warningDescriptor ? descriptorToText(warningDescriptor) : t("messages.noSurfaceAvailable");
+        setSummaryValues({
+            method: "-",
+            min: formatDisplayValue(payload.min_value ?? state.currentSummary.min),
+            max: formatDisplayValue(payload.max_value ?? state.currentSummary.max),
+        });
         renderLegend("surface-legend", [], emptyMessage);
         return state.currentSurfaceLegend;
     }
@@ -456,6 +550,11 @@ function renderSurface(payload) {
     state.surfaceOverlay.addTo(state.surfaceLayerGroup);
 
     state.currentSurfaceLegend = payload.legend || [];
+    setSummaryValues({
+        method: (payload.method || "IDW").toUpperCase(),
+        min: formatDisplayValue(payload.min_value),
+        max: formatDisplayValue(payload.max_value),
+    });
     renderLegend("surface-legend", state.currentSurfaceLegend, t("messages.noSurfaceLegendAvailable"));
     return state.currentSurfaceLegend;
 }
@@ -505,6 +604,8 @@ function applyLanguage(language, { persist = true } = {}) {
         updateSummary(state.currentParameter, getLocalizedTimeLabel(timeInfo) || state.currentTimeKey);
     }
 
+    setSummaryValues();
+
     applySurfaceOpacity();
     reapplyStatus();
     reapplyWarning();
@@ -525,6 +626,12 @@ async function refreshDashboard(forceInterpolation = true) {
     const timeInfo = getTimeInfo(parameter, timeKey);
     document.getElementById("refresh-btn").disabled = true;
     updateSummary(parameter, getLocalizedTimeLabel(timeInfo) || timeKey);
+    setSummaryValues({
+        visibleWells: "0",
+        method: "-",
+        min: "-",
+        max: "-",
+    });
     clearWarning();
     setStatusByKey("messages.loadingUpdate", "info");
 
@@ -603,6 +710,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
     document.getElementById("refresh-btn").addEventListener("click", async () => {
         await refreshDashboard(true);
+    });
+
+    document.getElementById("reset-view-btn").addEventListener("click", () => {
+        resetMapView();
     });
 
     document.getElementById("opacity-slider").addEventListener("input", () => {

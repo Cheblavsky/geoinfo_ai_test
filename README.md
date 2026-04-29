@@ -134,3 +134,13 @@ The backend converts all map data to `EPSG:4326` before sending it to Leaflet.
 - Activate the virtual environment.
 - Run `python app.py`.
 - Open the printed local URL in your browser.
+
+## 10. Teacher Assignment Checklist
+
+- Interactive map included
+- OpenStreetMap basemap included
+- Wells loaded from the CSV file
+- Parameter selection included
+- Time-based change included
+- Interpolation surface included
+- GitHub submission-ready project included
